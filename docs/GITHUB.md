@@ -19,15 +19,11 @@ python -m hkgai_agent
 python -m hkgai_agent.demos all --output artifacts/acceptance.json
 ```
 
-真实 API 验收需要在同一个终端环境中设置 `OPENAI_MODEL` 和服务需要的
-`OPENAI_API_KEY`，兼容服务还可设置 `OPENAI_BASE_URL`：
-
-```powershell
-python -m hkgai_agent.demos live --output artifacts/live.json
-```
-
-该命令会实际调用模型，必须成功加载 `code_review`、读取样例文件并给出最终回答
-才算通过。尚未配置凭据时不要把模拟 HTTP 测试当成真实 API 验收。
+本次提交只采用离线验证，不需要 `OPENAI_API_KEY`，也不调用付费 OpenAI API。
+**没有进行实时商业 LLM API 测试。** Agent Loop、上下文压缩、并发工具、Skill 和
+安全机制通过 fake models、实际本地测试工具与 mocked HTTP 验证。
+OpenAI-compatible `ModelProvider` 保留为可选集成，其未来使用方式见 README；
+真实模型输出质量与实时服务兼容性不属于已验证结论。
 
 ## 初始化与推送
 

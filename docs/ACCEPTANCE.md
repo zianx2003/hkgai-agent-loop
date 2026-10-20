@@ -11,7 +11,7 @@ python -m hkgai_agent
 
 离线 fake model 运行三轮：选择并加载 Skill → 批量读取两个文件 → 最终回答。
 工具结果显示原始调用 ID，结束状态为 `final`。模型响应是脚本，工具通过真实
-executor 执行。真实模型验收见 Phase 5。
+executor 执行。本次提交采用离线验收，可选模型集成说明见 Phase 5。
 
 ## Phase 2：压缩前后结构
 
@@ -88,7 +88,11 @@ Agent 加载 `skills/code_review/SKILL.md`，然后读取 `review_sample.py`。
 
 超时、部分失败、并发上限和共享资源读写隔离由自动测试覆盖。
 
-## Phase 5：自动测试、真实 API、GitHub
+## Phase 5：自动化离线测试与 GitHub 交付
+
+本次 HKGAI 提交不使用付费 OpenAI API，也不把实时商业模型调用作为验收项。
+**没有进行任何实时商业 LLM API 测试。** OpenAI-compatible `ModelProvider`
+作为可选集成保留。
 
 ```powershell
 python -m pip check
@@ -103,21 +107,14 @@ python -m hkgai_agent.demos all --output artifacts/acceptance.json
 跳过项是工作区与 Skill 的符号链接逃逸测试：当前 Windows 权限不允许创建
 测试用符号链接。普通路径越界、绝对路径、驱动器路径和遍历拒绝测试均已运行。
 
-在同一个终端配置实际服务的 `OPENAI_MODEL` 和所需 `OPENAI_API_KEY`，必要时设置
-`OPENAI_BASE_URL`，再执行：
+Agent Loop、Context Compression、Parallel Tools、Skills 和 Safety 均通过
+fake model 响应、实际本地测试工具以及 HTTPX MockTransport 的自动测试验证。
+测试涵盖工具调用与观察结果回传、最终回答、状态保留、实际并发重叠、Skill 权限隔离、
+路径限制、超时与失败处理。没有把模拟 HTTP 响应当作真实商业服务的响应。
 
-```powershell
-python -m hkgai_agent.demos live --output artifacts/live.json
-```
-
-真实 API 验收要求：模型通过工具实际加载 `code_review`、实际读取样例文件，
-然后返回最终回答；所有工具调用成功且文件未变。缺少工具调用、API 错误、超时、
-迭代耗尽均不能通过，不会自动退回 fake model。该命令会产生 API 请求及可能的费用。
-验收检查证明调用流程；回答内容的质量仍需要人工阅读。
-
-**当前真实 API 状态：未执行。** 本机未配置模型与 API 凭据；已验证缺少配置时
-明确报错。测试中的 HTTPX MockTransport 只证明适配器与整个调用链可重复运行，
-不能替代真实服务验收。
+离线测试验证编排与执行边界，不验证真实模型的推理能力、摘要质量或实时服务兼容性。
+如将来需要使用可选模型适配器，配置说明和显式调用命令见 README 的
+“Optional OpenAI-compatible integration”；这不属于本次提交的必需验收步骤。
 
 **GitHub 目标：[zianx2003/hkgai-agent-loop](https://github.com/zianx2003/hkgai-agent-loop)。**
 本地 CI 文件已准备。推送后应确认远程分支与本地提交一致，并在 Actions 页面检查

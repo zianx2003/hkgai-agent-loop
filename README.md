@@ -5,6 +5,29 @@ demonstrates bounded orchestration, context compression, parallel tools, local
 skills, and execution safety. No frontend, database, agent framework, or API
 credentials are needed for the demo and tests.
 
+## Submission verification scope
+
+This HKGAI submission is verified offline. **No live commercial LLM API test was
+performed, and no paid API is required to run or assess the project.** The
+OpenAI-compatible `ModelProvider` is retained as an optional integration.
+
+Automated tests use scripted `FakeModelProvider` responses and HTTPX
+`MockTransport`. The agent executes real local fixture tools and processes their
+observations; HTTP mocks exercise the adapter and CLI without network requests.
+
+| Component | Offline evidence |
+| --- | --- |
+| Agent loop | Tool requests, observations, final answers, multi-turn reuse, errors, and execution limits |
+| Context compression | Forced compaction with a fake summary, retained instructions/task state, and complete tool exchanges |
+| Parallel tools | Measured execution overlap, concurrency limits, call-ID/result correspondence, and write barriers |
+| Skills | Discovery, selection, loading, malformed-skill rejection, and permission isolation |
+| Safety | Argument validation, unsafe-path rejection, tool allowlisting, timeouts, and cancellation handling |
+
+These checks demonstrate orchestration and safety mechanics. They do not verify
+real-model reasoning, summary quality, or live-provider interoperability. On the
+local Windows environment, two symlink escape tests are skipped because creating
+test symlinks is not permitted; other path-rejection tests run normally.
+
 ## Architecture
 
 ```mermaid
@@ -109,7 +132,12 @@ the same report. Run from the repository root, or pass `--workspace` and `--skil
 The [Chinese acceptance guide](docs/ACCEPTANCE.md) maps these commands to the
 five development phases and records the local verification status.
 
-## Environment and real models
+## Optional OpenAI-compatible integration
+
+This integration is available for future use and is not part of the submission's
+verification. All offline commands above work without these environment variables.
+The following examples are configuration instructions, not records of executed
+live tests.
 
 | Variable | Meaning | Default |
 | --- | --- | --- |
@@ -162,7 +190,7 @@ The adapter uses non-streaming `/chat/completions`, function tools, and
 [official Chat Completions reference](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create).
 Credentials require HTTPS except for loopback hosts. Redirects are disabled.
 Provider errors are sanitized; response bodies and credentials are not echoed.
-Automated tests stay offline. Complete real-provider acceptance separately:
+Automated tests stay offline. An optional future live integration check is:
 
 ```powershell
 python -m hkgai_agent.demos live --output artifacts/live.json
@@ -318,6 +346,8 @@ has passed; check the repository's Actions tab after pushing.
 
 ## Known limitations
 
+- No live commercial LLM API test was performed. Adapter behavior is covered by
+  mocked HTTP; the offline model's responses and summaries are scripted.
 - Token accounting is approximate, not a model-specific tokenizer. Configure a
   safety margin. Summary fidelity depends on the model; only system instructions,
   the latest user request, and retained recent messages are preserved verbatim.
