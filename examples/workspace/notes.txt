@@ -1,0 +1,3 @@
+Build a lightweight Python agent loop for a technical interview.
+Use separate model, context, tool, safety, and skill modules.
+Demonstrate orchestration and parallel reads with a fake model.

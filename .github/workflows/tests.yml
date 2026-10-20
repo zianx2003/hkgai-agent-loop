@@ -1,0 +1,36 @@
+name: Tests and offline acceptance
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Run unit and integration tests
+        run: python -m pytest -q -ra
+      - name: Run the basic agent loop
+        run: python -m hkgai_agent
+      - name: Run offline acceptance demos
+        run: python -m hkgai_agent.demos all --output artifacts/acceptance.json

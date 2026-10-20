@@ -1,0 +1,3 @@
+Use Python 3.11+ and asyncio. Keep the project testable without API credentials.
+Confine file access to the workspace. Do not expose unrestricted shell commands.
+Keep writes disabled unless the caller explicitly allows them.
